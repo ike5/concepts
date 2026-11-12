@@ -261,9 +261,16 @@ test("any folder can be typed; ones that can't be used are asked again", async (
     assert.ok(messages.some((m) => /Choose a folder inside this repository/.test(m)), messages.join("\n"));
     const config = JSON.parse(await readFile(join(repo.root, ".concepts.json"), "utf8"));
     assert.equal(config.destinations[0].dir, "notes/My Learning", "a full path inside the repo is stored relative to it");
-    const bad = await call("setup_concepts", { repoPath: repo.root, destinations: [{ output: "library", dir: "/" }] });
-    assert.equal(bad.isError, true);
-    assert.match(bad.text, /You can't save files in/);
+    await writeFile(join(repo.root, "a-file"), "x");
+    const file = await call("setup_concepts", { repoPath: repo.root, destinations: [{ output: "project", dir: "a-file/concepts" }] });
+    assert.equal(file.isError, true);
+    assert.match(file.text, /a-file is a file, not a folder/);
+    // Windows only checks the read-only flag, and / is a writable drive there, so this case is POSIX-only.
+    if (process.platform !== "win32") {
+      const bad = await call("setup_concepts", { repoPath: repo.root, destinations: [{ output: "library", dir: "/" }] });
+      assert.equal(bad.isError, true);
+      assert.match(bad.text, /You can't save files in/);
+    }
   } finally {
     await client.close();
   }
