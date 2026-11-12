@@ -71,12 +71,12 @@ function seeded(root, source) {
  * Turn a requested destination into a stored one. Unset fields keep what the same kind of folder had
  * before, then fall back to defaults: docs/concepts or the learning library, at the Diagram level.
  */
-/** A path with symlinks resolved, even when its last parts don't exist yet (they're kept as typed). */
+/** A path with symlinks (and Windows short names like RUNNER~1) resolved, even when its last parts don't exist yet. */
 function realish(path) {
   let head = path;
   const tail = [];
   while (!existsSync(head) && dirname(head) !== head) { tail.unshift(head.slice(dirname(head).length).replace(/^[\\/]/, "")); head = dirname(head); }
-  try { return join(realpathSync(head), ...tail); } catch { return path; }
+  try { return join(realpathSync.native(head), ...tail); } catch { return path; }
 }
 
 function toDestination(d, previous, name, root) {
