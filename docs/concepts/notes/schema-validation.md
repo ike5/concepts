@@ -8,7 +8,11 @@ Describe the expected shape of data once and check untrusted input against it at
 
 - [Zod](<https://zod.dev/>)
 
-## Where it showed up (2)
+## Where it showed up (3)
+
+### 2026-11-12 · [Shorter setup with any typed folder](../commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder/README.md) · `1508c11`
+
+requestState comes back from the client, so earlier answers are re-validated with an answers schema each round.
 
 ### 2026-11-12 · [Choosing how much each commit saves, and where](../commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where/README.md) · `4cc790e`
 

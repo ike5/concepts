@@ -151,6 +151,23 @@
       "date": "2026-11-12T15:46:33-07:00",
       "subject": "Remove the setup pickers from the website",
       "skipped": "Removes website setup pickers, restoring the earlier setup step; nothing new to learn"
+    },
+    "1508c11e8de7863692558857997b764a0391555f": {
+      "shortSha": "1508c11",
+      "date": "2026-11-12T16:06:20-07:00",
+      "subject": "Shorter setup: three questions and any folder you type",
+      "title": "Shorter setup with any typed folder",
+      "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+      "concepts": [
+        "input-validation-reprompt",
+        "symlink-resolution",
+        "path-traversal",
+        "preflight-permission-check",
+        "multi-round-trip-requests",
+        "schema-validation",
+        "prefilled-default",
+        "display-vs-data"
+      ]
     }
   },
   "concepts": {
@@ -443,6 +460,15 @@
               "lines": "flowState"
             }
           ]
+        },
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "requestState comes back from the client, so earlier answers are re-validated with an answers schema each round.",
+          "files": []
         }
       ]
     },
@@ -467,6 +493,15 @@
               "lines": "slug"
             }
           ]
+        },
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "Typed project folders are resolved against the repo and rejected if relative() starts with '..' or is empty.",
+          "files": []
         }
       ]
     },
@@ -1424,6 +1459,15 @@
               "path": "packages/concepts-mcp/src/server.js"
             }
           ]
+        },
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "The form now asks one field per screen and re-shows the folder screen when the typed folder fails the check.",
+          "files": []
         }
       ]
     },
@@ -1810,6 +1854,110 @@
             {
               "path": "packages/concepts-mcp/src/cli.js",
               "lines": "printSaved"
+            }
+          ]
+        },
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "Absolute repo paths are stored repo-relative and home paths as ~/..., so the committed config is portable.",
+          "files": []
+        }
+      ]
+    },
+    "input-validation-reprompt": {
+      "name": "Validate and re-prompt",
+      "kind": "pattern",
+      "level": "beginner",
+      "explanation": "Instead of failing when input is bad, check it right away, explain the problem in one line and ask the same question again with the previous answer kept so it can be fixed.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "Users may type any folder; ones that can't be used (repo root, outside the repo, a file, unwritable) are asked again in both the CLI loop and the MCP form.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/cli.js"
+            },
+            {
+              "path": "packages/concepts-mcp/src/server.js"
+            }
+          ]
+        }
+      ]
+    },
+    "symlink-resolution": {
+      "name": "Resolving symlinks before comparing paths",
+      "kind": "concept",
+      "level": "intermediate",
+      "explanation": "Two different strings can name the same folder when a symlink is involved (on macOS /var is a link to /private/var). Comparing paths safely means resolving both with realpath first. For paths that don't exist yet, resolve the deepest existing ancestor and re-append the rest.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "Absolute folders typed inside a temp repo looked like they were outside it until both sides were resolved.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/core.js"
+            }
+          ]
+        }
+      ]
+    },
+    "preflight-permission-check": {
+      "name": "Checking write access up front",
+      "kind": "concept",
+      "level": "intermediate",
+      "explanation": "fs.access with W_OK on the nearest existing ancestor tells you whether a folder could be created and written, before any files are touched. It's advisory (permissions can change), so the real write still handles errors.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "Setup refuses folders it couldn't write to and says so, instead of failing halfway through writing.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/core.js"
+            }
+          ]
+        }
+      ]
+    },
+    "prefilled-default": {
+      "name": "Prefilled editable defaults",
+      "kind": "concept",
+      "level": "beginner",
+      "explanation": "Typing the default into the input line (readline's rl.write) lets the user press Enter to accept it or edit it in place, which is clearer than a hidden '[default]' hint.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "1508c11e8de7863692558857997b764a0391555f",
+          "shortSha": "1508c11",
+          "date": "2026-11-12T16:06:20-07:00",
+          "title": "Shorter setup with any typed folder",
+          "folder": "commits/2026-11-12-1508c11-shorter-setup-with-any-typed-folder",
+          "whyHere": "The folder question shows docs/concepts or ~/Desktop/ConceptLibrary already typed in.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/picker.js"
             }
           ]
         }

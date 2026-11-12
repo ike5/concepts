@@ -35,7 +35,9 @@ export function contractHome(path) {
 /** Tidy a folder setting the way it's stored: project folders relative to the repo, library folders with ~. */
 export function normalizeDir(output, dir) {
   if (output === "project") return (dir || DEFAULT_PROJECT_DIR).replace(/^\.\/+/, "").replace(/\/+$/, "") || DEFAULT_PROJECT_DIR;
-  return contractHome(resolve(expandHome(dir || defaultLibraryDir())));
+  // A library folder typed without ~ or a leading / (e.g. "Documents/Work") counts from the home folder, not the repo.
+  const expanded = expandHome(dir || defaultLibraryDir());
+  return contractHome(isAbsolute(expanded) ? resolve(expanded) : join(homedir(), expanded));
 }
 
 function checkDestination(d, file) {

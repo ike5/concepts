@@ -1,11 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { currentSettings, setup, status } from "./core.js";
-import { AGENTS, installCommands } from "./agents.js";
+import { currentSettings, folderProblem, setup, status } from "./core.js";
+import { AGENTS } from "./agents.js";
 import { defaultDir, ensureDir } from "./config.js";
 import { recordSchema, checkRecord } from "./schema.js";
 import { renderCommit } from "./library.js";
-import { ALL_FILES, BACKFILL, DETAIL, FILES, FILE_TYPES, HOOK, SCOPE, WHERE, detailLabel, parseDetail, presetFor } from "./choices.js";
+import { ALL_FILES, DETAIL, FILES, FILE_TYPES, SCOPE, WHERE, detailLabel, parseDetail, presetFor } from "./choices.js";
 import { CancelledError, pickers } from "./picker.js";
 
 export const usage = `concepts-mcp: hand-drawn diagrams of the concepts in your latest commits
@@ -26,12 +26,6 @@ init only: --agents claude,cursor,codex,generic  --hook | --no-hook  --backfill 
 Docs: https://ike5.github.io/concepts/`;
 
 const KIND = { project: "This project", library: "Learning library" };
-const AGENT_OPTIONS = [
-  { value: "claude", label: "Claude Code" },
-  { value: "cursor", label: "Cursor" },
-  { value: "codex", label: "Codex" },
-  { value: "generic", label: "Any MCP client", description: "via AGENTS.md" },
-];
 const PLACE_FLAGS = ["where", "output", "dir", "detail", "project-dir", "library-dir", "project-detail", "library-detail"];
 
 function parseFlags(args) {
@@ -50,50 +44,65 @@ function parseFlags(args) {
 
 const str = (v) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
 
-async function pickFolder(ui, kind, current) {
-  const fallback = current ?? defaultDir(kind);
-  const options = [
-    { value: fallback, label: fallback, description: current ? "where it is now" : kind === "library" ? "each repository gets its own subfolder" : "inside the repository", recommended: true },
-    { value: "", label: "Other…", description: "type a folder" },
-  ];
-  return (await ui.one(`${KIND[kind]}: which folder?`, options)) || ui.text(`${KIND[kind]} folder:`, fallback);
+const FOLDER_QUESTION = { project: "Folder in this repo:", library: "Folder on this computer:" };
+
+/** One line with the default filled in: Enter keeps it, or type any folder. A folder that can't be used is asked again. */
+async function askFolder(ui, kind, current) {
+  let fallback = current ?? defaultDir(kind);
+  for (;;) {
+    const dir = await ui.text(FOLDER_QUESTION[kind], fallback);
+    const problem = await folderProblem(process.cwd(), kind, dir);
+    if (!problem) return dir;
+    if (!ui.interactive) throw new Error(`${dir}: ${problem}`);
+    console.log(`  ${problem}`);
+    fallback = dir;
+  }
 }
 
-async function pickFiles(ui, kind, currentFiles) {
+const LEVEL_QUESTION = { project: "How much should each commit save in this project?", library: "How much should each commit save in your library?" };
+
+async function pickFiles(ui, kind, currentFiles, question = LEVEL_QUESTION[kind]) {
   const now = currentFiles ? presetFor(currentFiles) ?? "custom" : "diagram";
-  const level = await ui.one(`${KIND[kind]}: how much should each commit save?`, DETAIL, DETAIL.findIndex((d) => d.value === now));
+  const level = await ui.one(question, DETAIL, DETAIL.findIndex((d) => d.value === now));
   if (level !== "custom") return DETAIL.find((d) => d.value === level).files;
   const checked = (currentFiles ?? ALL_FILES).map((f) => FILE_TYPES.indexOf(f));
-  return ui.many(`${KIND[kind]}: which files?`, FILES, checked);
+  return ui.many("Which files?", FILES, checked);
 }
 
-/** Where diagrams go and how much each folder keeps, from flags first, then pickers, then the current settings. */
+/** Where diagrams go, which folder, and how much each folder keeps: flags first, then short questions. */
 async function chooseDestinations(flags, ui, current = []) {
   const kinds = new Set(current.map((d) => d.output));
   const now = kinds.size === 2 ? "both" : [...kinds][0] ?? "project";
-  const where = str(flags.where) ?? str(flags.output) ?? (await ui.one("Where should concept diagrams be saved?", WHERE, WHERE.findIndex((w) => w.value === now)));
+  const where = str(flags.where) ?? str(flags.output) ?? (await ui.one("Where should diagrams go?", WHERE, WHERE.findIndex((w) => w.value === now)));
   if (!WHERE.some((w) => w.value === where)) throw new Error('--where must be "project", "library" or "both".');
   const chosen = where === "both" ? ["project", "library"] : [where];
   const out = [];
   for (const k of chosen) {
     const was = current.find((d) => d.output === k);
     const single = chosen.length === 1;
-    const dir = str(flags[`${k}-dir`]) ?? (single ? str(flags.dir) : undefined) ?? (await pickFolder(ui, k, was?.dir));
+    const dir = str(flags[`${k}-dir`]) ?? (single ? str(flags.dir) : undefined) ?? (await askFolder(ui, k, was?.dir));
     const level = str(flags[`${k}-detail`]) ?? (single ? str(flags.detail) : undefined);
-    const files = level ? parseDetail(level) : await pickFiles(ui, k, was?.files);
+    const files = level ? parseDetail(level) : await pickFiles(ui, k, was?.files, single ? "How much should each commit save?" : LEVEL_QUESTION[k]);
     out.push({ output: k, dir, files });
   }
   return out;
 }
 
-function printSaved(result) {
-  console.log(`\n✓ ${result.scope === "personal" ? "Saved just for you in .concepts.local.json (git ignores it)" : `Set up in ${result.root}`}`);
-  for (const d of result.outputDirs) console.log(`  ${d.shown}  →  ${d.level}`);
-  console.log(`  Updated ${result.changed.join(", ")}`);
+const SETTINGS_CMD = "npx -y concepts-mcp@latest settings";
+const list = (items) => (items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`);
+
+/** Lines only for the unusual cases: moved folders, overrides and the hook. */
+function printNotes(result) {
   for (const s of result.seeded) console.log(`  ${s.shown} continues from ${s.shownFrom}; diagrammed commits won't be redone.`);
-  if (result.left.length) console.log(`  Earlier diagrams stay in ${result.leftShown.join(", ")}`);
-  if (result.personalOverride) console.log("  Note: your .concepts.local.json still overrides this for you. Delete it to use the shared setting.");
-  if (result.hook) console.log(result.hook.installed ? `  Hook: ${result.hook.path}` : `  Hook skipped: ${result.hook.reason}`);
+  if (result.left.length) console.log(`  Earlier diagrams stay in ${result.leftShown.join(", ")}.`);
+  if (result.personalOverride) console.log("  Your .concepts.local.json still overrides this for you. Delete it to use the shared setting.");
+  if (result.hook) console.log(result.hook.installed ? `  Added a post-commit reminder: ${result.hook.path}` : `  Hook skipped: ${result.hook.reason}`);
+}
+
+function printSaved(result) {
+  console.log(`\n✓ Saved${result.scope === "personal" ? " just for you (.concepts.local.json)" : ""}.`);
+  for (const d of result.outputDirs) console.log(`  ${d.shown}  →  ${d.level}`);
+  printNotes(result);
 }
 
 async function init(flags) {
@@ -101,20 +110,20 @@ async function init(flags) {
   const now = await currentSettings(process.cwd());
   const destinations = await chooseDestinations(flags, ui, now.destinations);
   const agentsRaw = str(flags.agents);
-  const agents = agentsRaw ? agentsRaw.split(/[\s,]+/).map((a) => a.toLowerCase()).filter(Boolean) : await ui.many("Which agents do you use?", AGENT_OPTIONS);
+  const agents = agentsRaw ? agentsRaw.split(/[\s,]+/).map((a) => a.toLowerCase()).filter(Boolean) : AGENTS;
   const bad = agents.filter((a) => !AGENTS.includes(a));
   if (bad.length) throw new Error(`Unknown agent: ${bad.join(", ")}. Use ${AGENTS.join(", ")}.`);
-  const gitHook = flags.hook !== undefined ? flags.hook === true || /^y/i.test(String(flags.hook)) : await ui.one("Add a post-commit reminder hook?", HOOK);
-  const backfill = flags.backfill !== undefined ? Number(flags.backfill) || 0 : await ui.one("Diagram some recent commits now?", BACKFILL);
+  const gitHook = flags.hook === true || /^y/i.test(String(flags.hook ?? ""));
+  const backfill = Number(flags.backfill) || 0;
   const scope = str(flags.scope) ?? "shared";
   if (!SCOPE.some((s) => s.value === scope)) throw new Error('--scope must be "shared" or "personal".');
 
   const result = await setup(process.cwd(), { destinations, scope, agents, gitHook, backfill });
-  printSaved(result);
-  console.log("\nAdd the MCP server to your agent (once per machine):");
-  for (const cmd of installCommands(agents)) console.log(`\n  ${cmd.label}:\n  ${cmd.command.split("\n").join("\n  ")}${cmd.note && cmd.agent !== "generic" ? `\n  ${cmd.note.split("\n").join("\n  ")}` : ""}`);
-  console.log("\nThen commit as usual. Your agent diagrams each new commit, or ask it to \"update my concept diagrams\".");
-  console.log("Change folders or detail later with: npx -y concepts-mcp@latest settings");
+  console.log(`\n✓ Concept diagrams are on. Saving to ${list(result.outputDirs.map((d) => d.shown))}.`);
+  if (result.scope === "shared") console.log(`  Commit ${list(result.changed)}.`);
+  printNotes(result);
+  console.log("  No MCP in your agent yet? https://ike5.github.io/concepts/#install");
+  console.log(`  Change this later: ${SETTINGS_CMD}`);
 }
 
 function printCurrent(now) {
@@ -154,10 +163,10 @@ async function settings(flags) {
       d.files = await pickFiles(ui, d.output, d.files);
     } else if (action === "folder") {
       const d = await which("Which folder?");
-      d.dir = await ui.text(`New ${KIND[d.output].toLowerCase()} folder:`, d.dir);
+      d.dir = await askFolder(ui, d.output, d.dir);
     } else if (action === "add") {
       const output = destinations[0].output === "project" ? "library" : "project";
-      destinations.push({ output, dir: await pickFolder(ui, output), files: await pickFiles(ui, output) });
+      destinations.push({ output, dir: await askFolder(ui, output), files: await pickFiles(ui, output) });
     } else {
       const d = await which("Stop saving to which folder?");
       destinations = destinations.filter((x) => x !== d);

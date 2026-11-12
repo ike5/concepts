@@ -35,7 +35,8 @@ npx -y concepts-mcp@latest init
 Both ask the same questions as pickers, with the recommended answer already chosen (arrow keys and Enter in the terminal; a form, or your agent's own multiple-choice question, in your agent):
 
 1. **Where diagrams go:** this project (`docs/concepts/`), your learning library (`~/Desktop/ConceptLibrary/<repo>/`, or `~/ConceptLibrary/` when there's no Desktop folder), or **both**.
-2. **How much each commit saves**, asked for each folder:
+2. **Which folder**, with the default filled in: any folder inside the repo (e.g. `business_logic/concepts`), or any folder on your computer (e.g. `~/Documents/Work`; each repository gets its own subfolder there).
+3. **How much each commit saves**, asked for each folder:
 
    | Level | Files per commit |
    | --- | --- |
@@ -45,7 +46,8 @@ Both ask the same questions as pickers, with the recommended answer already chos
    | **Custom…** | tick any of the three |
 
    So the repo can keep just the diagrams while your library on the Desktop keeps every file.
-3. **Which agents you use**, **whether to add a post-commit reminder hook**, and **how many recent commits to diagram straight away** (terminal only).
+
+That's all it asks. Everything else is a flag: `--agents`, `--hook` (a post-commit reminder) and `--backfill <n>` (diagram recent commits straight away). `--project-dir` and `--library-dir` skip the folder question.
 
 It writes `.concepts.json`, adds the workflow to `AGENTS.md`, and adds an `@AGENTS.md` import to `CLAUDE.md` for Claude Code. Commit those files.
 

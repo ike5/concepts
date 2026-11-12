@@ -191,8 +191,8 @@ test("setup without choices: the agent gets the questions when its client can't 
     const res = await call("setup_concepts", { repoPath: repo.root });
     assert.ok(!res.isError, res.text);
     assert.equal(res.structuredContent.needsChoices, true);
-    assert.deepEqual(res.structuredContent.questions.map((q) => q.id), ["where", "detail", "files"]);
-    assert.match(res.structuredContent.questions[1].options[0].label, /^Diagram \(recommended\)$/);
+    assert.deepEqual(res.structuredContent.questions.map((q) => q.id), ["where", "folder", "detail", "files"]);
+    assert.match(res.structuredContent.questions[2].options[0].label, /^Diagram \(recommended\)$/);
     assert.match(res.text, /AskUserQuestion/);
     assert.ok(!(await exists(join(repo.root, ".concepts.json"))), "nothing is written until the user answers");
   } finally {
@@ -200,36 +200,70 @@ test("setup without choices: the agent gets the questions when its client can't 
   }
 });
 
-test("setup without choices shows a form, round by round, when the client supports it", async () => {
+test("setup without choices shows a form, one question per screen, with folders you can type", async () => {
   const repo = await tempRepo();
   await repo.commit({ "a.js": "1\n" }, "Base");
   const asked = [];
   const answers = {
-    where: { where: "both" },
-    details: { projectDetail: "diagram", projectFolder: "docs/concepts", libraryDetail: "custom", libraryFolder: "~/Library2" },
-    files: { libraryFiles: ["svg", "notes"] },
+    where: "both",
+    projectDir: "business_logic",
+    projectDetail: "diagram",
+    libraryDir: "Documents/Work",
+    libraryDetail: "custom",
+    libraryFiles: ["svg", "notes"],
   };
   const { client, call } = await connect(repo, {
     elicit: (params) => {
-      const props = params.requestedSchema.properties;
-      const key = props.where ? "where" : props.projectDetail ? "details" : "files";
-      asked.push({ key, params });
-      return { action: "accept", content: answers[key] };
+      const keys = Object.keys(params.requestedSchema.properties);
+      assert.equal(keys.length, 1, "one question per screen");
+      asked.push({ key: keys[0], field: params.requestedSchema.properties[keys[0]] });
+      return { action: "accept", content: { [keys[0]]: answers[keys[0]] } };
     },
   });
   try {
     const res = await call("setup_concepts", { repoPath: repo.root });
     assert.ok(!res.isError, res.text);
-    assert.deepEqual(asked.map((a) => a.key), ["where", "details", "files"]);
-    const where = asked[0].params.requestedSchema.properties.where;
+    assert.deepEqual(asked.map((a) => a.key), ["where", "projectDir", "projectDetail", "libraryDir", "libraryDetail", "libraryFiles"]);
+    const where = asked[0].field;
     assert.equal(where.default, "project");
     assert.equal(where.oneOf[0].title, "This project (recommended)");
-    assert.equal(asked[1].params.requestedSchema.properties.projectDetail.oneOf[0].title, "Diagram (recommended)");
+    assert.equal(where.description, undefined, "no wall of explanations");
+    assert.equal(asked[1].field.default, "docs/concepts");
+    assert.equal(asked[2].field.oneOf[0].title, "Just the diagram (recommended)");
     const config = JSON.parse(await readFile(join(repo.root, ".concepts.json"), "utf8"));
     assert.deepEqual(config.destinations.map((d) => [d.output, d.dir, d.files]), [
-      ["project", "docs/concepts", ["svg"]],
-      ["library", "~/Library2", ["svg", "notes"]],
-    ]);
+      ["project", "business_logic", ["svg"]],
+      ["library", "~/Documents/Work", ["svg", "notes"]],
+    ], "a library folder without ~ counts from the home folder");
+    assert.ok(await exists(join(repo.root, "business_logic/README.md")));
+    assert.ok(await exists(join(repo.home, "Documents/Work/my-app/README.md")));
+  } finally {
+    await client.close();
+  }
+});
+
+test("any folder can be typed; ones that can't be used are asked again", async () => {
+  const repo = await tempRepo();
+  await repo.commit({ "a.js": "1\n" }, "Base");
+  const typed = { projectDir: ["../outside", join(repo.root, "notes", "My Learning")] };
+  const messages = [];
+  const { client, call } = await connect(repo, {
+    elicit: (params) => {
+      const key = Object.keys(params.requestedSchema.properties)[0];
+      messages.push(params.message);
+      const value = key === "where" ? "project" : key === "projectDir" ? typed.projectDir.shift() : "diagram";
+      return { action: "accept", content: { [key]: value } };
+    },
+  });
+  try {
+    const res = await call("setup_concepts", { repoPath: repo.root });
+    assert.ok(!res.isError, res.text);
+    assert.ok(messages.some((m) => /Choose a folder inside this repository/.test(m)), messages.join("\n"));
+    const config = JSON.parse(await readFile(join(repo.root, ".concepts.json"), "utf8"));
+    assert.equal(config.destinations[0].dir, "notes/My Learning", "a full path inside the repo is stored relative to it");
+    const bad = await call("setup_concepts", { repoPath: repo.root, destinations: [{ output: "library", dir: "/" }] });
+    assert.equal(bad.isError, true);
+    assert.match(bad.text, /You can't save files in/);
   } finally {
     await client.close();
   }
@@ -253,7 +287,8 @@ test("CLI: init --yes picks the recommended choices; settings flags add a second
   await repo.commit({ "a.js": "1\n" }, "Base");
   const run = (args) => execFile(process.execPath, [entry, ...args], { cwd: repo.root, env: repo.env });
   const init = await run(["init", "--yes"]);
-  assert.match(init.stdout, /docs\/concepts {2}→ {2}Diagram/);
+  assert.match(init.stdout, /Saving to docs\/concepts\./);
+  assert.doesNotMatch(init.stdout, /mcpServers/, "no install JSON dumped");
   let config = JSON.parse(await readFile(join(repo.root, ".concepts.json"), "utf8"));
   assert.deepEqual(config.destinations, [{ output: "project", dir: "docs/concepts", files: ["svg"] }]);
   const changed = await run(["settings", "--where", "both", "--library-detail", "svg,excalidraw,notes", "--scope", "shared"]);
