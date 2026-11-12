@@ -1,6 +1,6 @@
 {
   "name": "concepts-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP server that turns your latest commits into hand-drawn Excalidraw diagrams of the concepts they use, so you keep learning from code your AI wrote.",
   "keywords": [
     "mcp",
