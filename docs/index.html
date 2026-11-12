@@ -51,12 +51,39 @@
       <a class="btn primary open-link" id="open-link" hidden>Open in Cursor</a>
       <p class="copy-status" id="command-note" role="status" aria-live="polite">Needs Node.js 20+ and git. Paste into your terminal.</p>
       <div class="setup-step">
-        <p>Then turn it on in a repository. Ask your agent, or run the setup yourself:</p>
+        <p>Then turn it on in a repository. Your agent and the setup command both ask these questions, with the recommended answers already chosen:</p>
+        <div class="choose">
+          <span class="choose-label" id="where-label">Save diagrams in</span>
+          <div class="picker" role="group" aria-labelledby="where-label">
+            <button type="button" data-where="project" aria-pressed="true">This project <small>recommended</small></button>
+            <button type="button" data-where="library" aria-pressed="false">My learning library</button>
+            <button type="button" data-where="both" aria-pressed="false">Both</button>
+          </div>
+        </div>
+        <div class="choose" data-detail-row="first">
+          <span class="choose-label" id="detail-label">Each commit saves</span>
+          <div class="picker" role="group" aria-labelledby="detail-label">
+            <button type="button" data-detail="diagram" aria-pressed="true">Diagram <small>recommended</small></button>
+            <button type="button" data-detail="editable" aria-pressed="false">Editable</button>
+            <button type="button" data-detail="notes" aria-pressed="false">Diagram + notes</button>
+          </div>
+        </div>
+        <div class="choose" data-detail-row="library" hidden>
+          <span class="choose-label" id="library-detail-label">Your library saves</span>
+          <div class="picker" role="group" aria-labelledby="library-detail-label">
+            <button type="button" data-detail="diagram" aria-pressed="false">Diagram</button>
+            <button type="button" data-detail="editable" aria-pressed="false">Editable</button>
+            <button type="button" data-detail="notes" aria-pressed="true">Diagram + notes</button>
+          </div>
+        </div>
+        <p class="choose-note" id="detail-note" role="status" aria-live="polite">Just the diagram: concepts.svg.</p>
         <div class="row">
           <span class="ask">“Set up concept diagrams for this repo.”</span>
           <span class="or">or</span>
-          <code class="pill">npx -y concepts-mcp@latest init</code>
+          <code class="pill" id="init-command">npx -y concepts-mcp@latest init --where project --detail diagram</code>
+          <button class="btn secondary copy-small" type="button" data-copy="init-command">Copy</button>
         </div>
+        <p class="choose-note">Change it any time: ask your agent, or run <code>npx -y concepts-mcp@latest settings</code>. Custom file choices are in the setup command.</p>
       </div>
     </div>
     <p class="hint">Free and open source · Runs on your machine · Needs Node.js 20+ and git · No account or API key</p>
@@ -170,7 +197,7 @@
     <p class="intro">Your agent does the thinking. The MCP gives it the workflow, the history and a renderer.</p>
     <div class="tools">
       <article class="card"><h3><code>get_concepts_instructions</code></h3><p>The workflow, so every commit is modeled the same way.</p></article>
-      <article class="card"><h3><code>setup_concepts</code></h3><p>Turns a repository on and writes the agent instructions.</p></article>
+      <article class="card"><h3><code>setup_concepts</code></h3><p>Sets up or changes where diagrams go and how much each commit saves, with a picker.</p></article>
       <article class="card"><h3><code>get_unprocessed_commits</code></h3><p>Commits without a diagram yet, with diffs sized to fit.</p></article>
       <article class="card"><h3><code>get_concept_library</code></h3><p>Concepts already learned, so their notes are reused.</p></article>
       <article class="card"><h3><code>record_commit_concepts</code></h3><p>Lays out and draws the diagrams, then updates the library.</p></article>

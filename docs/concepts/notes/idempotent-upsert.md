@@ -4,7 +4,13 @@ _pattern · intermediate_
 
 Write generated text between start/end markers, and replace only that block on later runs. Running setup twice gives the same file, and everything outside the markers is left alone.
 
-## Where it showed up (1)
+## Where it showed up (2)
+
+### 2026-11-12 · [Choosing how much each commit saves, and where](../commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where/README.md) · `4cc790e`
+
+.concepts.local.json is added to .gitignore only when no matching line exists.
+
+Files: `packages/concepts-mcp/src/config.js:ignoreLocalConfig`
 
 ### 2026-11-06 · [concepts-mcp: an MCP server that draws commits](../commits/2026-11-06-9931945-concepts-mcp-an-mcp-server-that-draws-commits/README.md) · `9931945`
 

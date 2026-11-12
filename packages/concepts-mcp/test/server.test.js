@@ -34,14 +34,13 @@ test("full flow in project mode: setup, pending, record, notes, auto-skip", asyn
     assert.equal(before.structuredContent.notConfigured, true);
     assert.match(before.text, /setup_concepts/);
 
-    const setup = await call("setup_concepts", { repoPath: repo.root, output: "project", backfill: 1, gitHook: true });
+    const setup = await call("setup_concepts", { repoPath: repo.root, destinations: [{ output: "project", files: ["svg", "excalidraw", "notes"] }], backfill: 1, gitHook: true });
     assert.ok(!setup.isError, setup.text);
     const agents = await readFile(join(repo.root, "AGENTS.md"), "utf8");
     assert.match(agents, /concepts-mcp:start[\s\S]*get_unprocessed_commits[\s\S]*concepts-mcp:end/);
     assert.match(await readFile(join(repo.root, "CLAUDE.md"), "utf8"), /^@AGENTS\.md/m);
     const config = JSON.parse(await readFile(join(repo.root, ".concepts.json"), "utf8"));
-    assert.equal(config.output, "project");
-    assert.equal(config.dir, "docs/concepts");
+    assert.deepEqual(config.destinations, [{ output: "project", dir: "docs/concepts", files: ["svg", "excalidraw", "notes"] }]);
     assert.match(await readFile(join(repo.root, ".git/hooks/post-commit"), "utf8"), /concepts-mcp:start/);
 
     // The setup files get committed: auto-skipped. Then real work with a lockfile that must not reach the diff.
@@ -75,7 +74,7 @@ test("full flow in project mode: setup, pending, record, notes, auto-skip", asyn
     assert.deepEqual(rec.structuredContent.newConcepts.sort(), ["exponential-backoff", "jitter"]);
     assert.equal(rec.structuredContent.insideRepo, true);
     for (const file of ["svg", "excalidraw", "readme"]) assert.ok(await exists(rec.structuredContent[file]), file);
-    assert.match(rec.structuredContent.folder, /docs[\\/]concepts[\\/]commits[\\/]\d{4}-\d{2}-\d{2}-[0-9a-f]{7}-retrying-with-backoff$/);
+    assert.match(rec.structuredContent.folder, /docs[\\/]concepts[\\/]commits[\\/]\d{5}-\d{4}-\d{2}-\d{2}-[0-9a-f]{7}-retrying-with-backoff$/);
 
     const out = join(repo.root, "docs/concepts");
     const note = join(out, "notes/exponential-backoff.md");
@@ -123,7 +122,7 @@ test("library mode writes to ~/ConceptLibrary/<repo> and a library index", async
     const setup = await call("setup_concepts", { repoPath: repo.root, output: "library", agents: ["codex"], backfill: 1 });
     assert.ok(!setup.isError, setup.text);
     assert.equal(setup.structuredContent.outputDir, join(repo.home, "ConceptLibrary", "my-app"));
-    assert.equal(setup.structuredContent.config.dir, "~/ConceptLibrary", "home is stored as ~ so the config is portable");
+    assert.equal(setup.structuredContent.config.destinations[0].dir, "~/ConceptLibrary", "home is stored as ~ so the config is portable");
     assert.ok(!(await exists(join(repo.root, "CLAUDE.md"))), "no CLAUDE.md when Claude Code isn't chosen");
     const rec = await call("record_commit_concepts", { repoPath: repo.root, commit: sha, title: "Hello", summary: "Prints.", views: [view()], concepts: [concept("stdout")] });
     assert.ok(!rec.isError, rec.text);
