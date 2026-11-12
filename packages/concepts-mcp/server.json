@@ -4,9 +4,9 @@
   "title": "Concepts",
   "description": "Turns each commit into a hand-drawn Excalidraw diagram of the concepts it uses, so you keep learning from code your AI wrote.",
   "repository": { "url": "https://github.com/ike5/concepts", "source": "github" },
-  "version": "0.2.0",
+  "version": "0.2.1",
   "websiteUrl": "https://ike5.github.io/concepts/",
   "packages": [
-    { "registryType": "npm", "identifier": "concepts-mcp", "version": "0.2.0", "transport": { "type": "stdio" } }
+    { "registryType": "npm", "identifier": "concepts-mcp", "version": "0.2.1", "transport": { "type": "stdio" } }
   ]
 }
