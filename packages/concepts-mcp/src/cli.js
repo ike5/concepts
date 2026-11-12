@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { currentSettings, setup, status } from "./core.js";
 import { AGENTS, installCommands } from "./agents.js";
-import { contractHome, defaultDir, ensureDir } from "./config.js";
+import { defaultDir, ensureDir } from "./config.js";
 import { recordSchema, checkRecord } from "./schema.js";
 import { renderCommit } from "./library.js";
 import { ALL_FILES, BACKFILL, DETAIL, FILES, FILE_TYPES, HOOK, SCOPE, WHERE, detailLabel, parseDetail, presetFor } from "./choices.js";
@@ -88,10 +88,10 @@ async function chooseDestinations(flags, ui, current = []) {
 
 function printSaved(result) {
   console.log(`\n✓ ${result.scope === "personal" ? "Saved just for you in .concepts.local.json (git ignores it)" : `Set up in ${result.root}`}`);
-  for (const d of result.outputDirs) console.log(`  ${contractHome(d.dir)}  →  ${d.level}`);
+  for (const d of result.outputDirs) console.log(`  ${d.shown}  →  ${d.level}`);
   console.log(`  Updated ${result.changed.join(", ")}`);
-  for (const s of result.seeded) console.log(`  ${s.dir} continues from ${s.from}; diagrammed commits won't be redone.`);
-  if (result.left.length) console.log(`  Earlier diagrams stay in ${result.left.join(", ")}`);
+  for (const s of result.seeded) console.log(`  ${s.shown} continues from ${s.shownFrom}; diagrammed commits won't be redone.`);
+  if (result.left.length) console.log(`  Earlier diagrams stay in ${result.leftShown.join(", ")}`);
   if (result.personalOverride) console.log("  Note: your .concepts.local.json still overrides this for you. Delete it to use the shared setting.");
   if (result.hook) console.log(result.hook.installed ? `  Hook: ${result.hook.path}` : `  Hook skipped: ${result.hook.reason}`);
 }
@@ -119,7 +119,7 @@ async function init(flags) {
 
 function printCurrent(now) {
   console.log(`Concept diagrams in ${now.root}${now.personal ? " (your personal setting, .concepts.local.json)" : ""}:`);
-  for (const d of now.destinations) console.log(`  ${contractHome(d.path)}  →  ${d.level}`);
+  for (const d of now.destinations) console.log(`  ${d.shown}  →  ${d.level}`);
 }
 
 async function settings(flags) {
@@ -189,7 +189,7 @@ export async function main(argv) {
     if (command === "status") {
       const s = await status(process.cwd());
       if (!s.configured) return console.log(`Not set up in ${s.root}. Run: npx -y concepts-mcp@latest init`);
-      const where = s.destinations.map((d) => `\n    ${contractHome(d.path)}  →  ${d.level}`).join("");
+      const where = s.destinations.map((d) => `\n    ${d.shown}  →  ${d.level}`).join("");
       return console.log(`${s.root}\n  Saving to:${where}${s.personal ? "\n  Setting:  personal (.concepts.local.json)" : ""}\n  Diagrams: ${s.diagrams}\n  Concepts: ${s.concepts}\n  Waiting:  ${s.pending} commit${s.pending === 1 ? "" : "s"}`);
     }
     if (command === "render") return await render(rest);

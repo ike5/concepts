@@ -13,6 +13,9 @@ import { detailLabel, normalizeFiles, parseDetail } from "./choices.js";
 
 export class NotConfiguredError extends Error {}
 
+/** How a folder is shown to people: relative to the repo when inside it, otherwise with ~ for the home folder. */
+export const shownDir = (root, path) => outputDirInRepo(root, path) ?? contractHome(path);
+
 const DEFAULT_FILES = ["svg"];
 
 async function resolveAll(root, destinations) {
@@ -85,7 +88,7 @@ export async function currentSettings(repoPath) {
   const resolved = await resolveAll(root, destinations).catch(() => destinations.map((d) => ({ ...d, path: d.dir })));
   return {
     root, configured: Boolean(shared), personal: Boolean(local),
-    destinations: resolved.map((d) => ({ output: d.output, dir: d.dir, path: d.path, files: d.files, level: detailLabel(d.files) })),
+    destinations: resolved.map((d) => ({ output: d.output, dir: d.dir, path: d.path, shown: shownDir(root, d.path), files: d.files, level: detailLabel(d.files) })),
   };
 }
 
@@ -141,7 +144,7 @@ export async function setup(repoPath, { destinations, output, dir, detail, files
     let state = await readState(d.path);
     if (!Object.keys(state.commits).length) {
       const source = sources.find((s) => s.path !== d.path && s.output === d.output) ?? sources.find((s) => s.path !== d.path);
-      if (source) { state = seeded(root, source); seededFrom.push({ dir: d.path, from: source.path }); }
+      if (source) { state = seeded(root, source); seededFrom.push({ dir: d.path, from: source.path, shown: shownDir(root, d.path), shownFrom: shownDir(root, source.path) }); }
     }
     await fillSeq(root, state);
     await writeState(d.path, state);
@@ -153,12 +156,12 @@ export async function setup(repoPath, { destinations, output, dir, detail, files
   return {
     root,
     outputDir: resolved[0].path,
-    outputDirs: resolved.map((d) => ({ output: d.output, dir: d.path, files: d.files, level: detailLabel(d.files) })),
+    outputDirs: resolved.map((d) => ({ output: d.output, dir: d.path, shown: shownDir(root, d.path), files: d.files, level: detailLabel(d.files) })),
     config: { version: 2, baseline, destinations: next },
     scope: personal ? "personal" : "shared",
     personalOverride: !personal && Boolean(local),
     seeded: seededFrom,
-    left,
+    left, leftShown: left.map((p) => shownDir(root, p)),
     changed, hook, install: installCommands(agents),
   };
 }

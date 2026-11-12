@@ -3,7 +3,7 @@ import { z } from "zod";
 import { pending, library, record, setup, currentSettings, NotConfiguredError } from "./core.js";
 import { AGENTS, WORKFLOW } from "./agents.js";
 import { recordInput } from "./schema.js";
-import { contractHome, defaultDir, DEFAULT_PROJECT_DIR, defaultLibraryDir } from "./config.js";
+import { defaultDir, DEFAULT_PROJECT_DIR, defaultLibraryDir } from "./config.js";
 import { DETAIL, FILES, FILE_TYPES, SCOPE, WHERE, agentQuestions, presetFor } from "./choices.js";
 
 export const instructions = "concepts-mcp turns a repository's recent commits into hand-drawn Excalidraw diagrams of the concepts they use, so the user can learn from code an AI wrote. After committing, or when asked to update concepts, call get_concepts_instructions once and follow it. You do the analysis; these tools read git and write the files.";
@@ -58,7 +58,7 @@ function readFlow(ctx) {
 const ask = (key, flow, form) => inputRequired({ requestState: JSON.stringify(flow), inputRequests: { [key]: inputRequired.elicit(form) } });
 
 function describeCurrent(current) {
-  return current.destinations.map((d) => `${d.output === "project" ? d.dir : contractHome(d.path)} (${d.level})`).join(", ");
+  return current.destinations.map((d) => `${d.shown} (${d.level})`).join(", ");
 }
 
 /**
@@ -151,10 +151,10 @@ function questionsForAgent(current) {
 }
 
 function setupSummary(result) {
-  const where = result.outputDirs.map((d) => `${d.dir} (${d.level})`).join("; ");
+  const where = result.outputDirs.map((d) => `${d.shown} (${d.level})`).join("; ");
   const parts = [`Set up in ${result.root}. Saving to: ${where}.`, `Changed: ${result.changed.join(", ")}${result.scope === "personal" ? " (your personal setting; git ignores it)" : ""}.`];
-  for (const s of result.seeded) parts.push(`${s.dir} continues from ${s.from}: commits already diagrammed there won't be redone.`);
-  if (result.left.length) parts.push(`Earlier diagrams stay in ${result.left.join(", ")}.`);
+  for (const s of result.seeded) parts.push(`${s.shown} continues from ${s.shownFrom}: commits already diagrammed there won't be redone.`);
+  if (result.left.length) parts.push(`Earlier diagrams stay in ${result.leftShown.join(", ")}.`);
   if (result.personalOverride) parts.push(".concepts.local.json still overrides this for you; delete it to use the shared setting.");
   if (result.hook) parts.push(`Hook: ${result.hook.installed ? result.hook.path : result.hook.reason}`);
   return parts.join(" ");
