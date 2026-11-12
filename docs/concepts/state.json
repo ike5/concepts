@@ -69,6 +69,71 @@
         "derived-state",
         "feedback-loop"
       ]
+    },
+    "58508704a25d2e6bdcadf31ac9e5f478a9b072de": {
+      "shortSha": "5850870",
+      "date": "2026-11-05T22:30:51-07:00",
+      "subject": "Redesign the website and README",
+      "title": "A redesigned site with a live library page",
+      "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+      "concepts": [
+        "progressive-enhancement",
+        "static-json-as-api",
+        "dedupe-by-key",
+        "script-defer",
+        "self-hosted-webfonts",
+        "variable-fonts",
+        "css-custom-properties",
+        "fluid-typography",
+        "github-issue-forms",
+        "security-policy"
+      ]
+    },
+    "f1ad0981aba8da22814f651ffcec864cc89c4509": {
+      "shortSha": "f1ad098",
+      "date": "2026-11-05T22:35:51-07:00",
+      "subject": "Run tests on Node 20 by listing test files",
+      "title": "Listing test files so Node 20 finds them",
+      "folder": "commits/2026-11-05-f1ad098-listing-test-files-so-node-20-finds-them",
+      "concepts": [
+        "shell-glob-expansion",
+        "node-test-runner",
+        "ci-version-matrix"
+      ]
+    },
+    "e6b6eb2f140f629e2612fc8e99e90b8de9adcce9": {
+      "shortSha": "e6b6eb2",
+      "date": "2026-11-06T11:20:51-07:00",
+      "subject": "Release 0.1.1",
+      "skipped": "Version bump to 0.1.1 and package.json reformatting"
+    },
+    "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd": {
+      "shortSha": "4cc790e",
+      "date": "2026-11-12T15:24:56-07:00",
+      "subject": "Let users choose how much each commit saves, and where",
+      "title": "Choosing how much each commit saves, and where",
+      "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+      "concepts": [
+        "mcp-elicitation",
+        "multi-round-trip-requests",
+        "capability-negotiation",
+        "graceful-degradation",
+        "single-source-of-truth",
+        "raw-mode-terminal",
+        "ansi-escape-redraw",
+        "fake-stream-testing",
+        "layered-config",
+        "migration-on-read",
+        "recommended-defaults",
+        "git-generation-number",
+        "zero-padded-sort-keys",
+        "fan-out-writes",
+        "processed-set",
+        "derived-state",
+        "schema-validation",
+        "idempotent-upsert",
+        "aria-pressed-toggles"
+      ]
     }
   },
   "concepts": {
@@ -196,6 +261,20 @@
               "lines": "upsertBlock, installHook"
             }
           ]
+        },
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": ".concepts.local.json is added to .gitignore only when no matching line exists.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/config.js",
+              "lines": "ignoreLocalConfig"
+            }
+          ]
         }
       ]
     },
@@ -267,6 +346,20 @@
               "lines": "pending"
             }
           ]
+        },
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "A new or moved folder is seeded with the processed commits from an existing one, and pending work is the union across folders, so nothing is redone.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/core.js",
+              "lines": "seeded"
+            }
+          ]
         }
       ]
     },
@@ -317,6 +410,20 @@
           "files": [
             {
               "path": "packages/concepts-mcp/src/schema.js"
+            }
+          ]
+        },
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "requestState comes back through the client, so earlier answers are re-validated with a Zod schema before setup uses them.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/server.js",
+              "lines": "flowState"
             }
           ]
         }
@@ -863,6 +970,20 @@
               "lines": "pending"
             }
           ]
+        },
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "Former output folders aren't stored anywhere new: they're derived from the elsewhere field of seeded commits, so commits that only touch them are still skipped.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/core.js",
+              "lines": "pending"
+            }
+          ]
         }
       ]
     },
@@ -885,6 +1006,732 @@
             {
               "path": "packages/concepts-mcp/test/server.test.js",
               "lines": "never dirties the output folder"
+            }
+          ]
+        }
+      ]
+    },
+    "progressive-enhancement": {
+      "name": "Progressive enhancement",
+      "kind": "pattern",
+      "level": "intermediate",
+      "explanation": "Ship a page that already works as plain HTML, then let JavaScript add extras on top. If the script fails or is blocked, the visitor still gets the core content.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "MDN: Progressive enhancement",
+          "url": "https://developer.mozilla.org/en-US/docs/Glossary/Progressive_Enhancement"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "The library page lists the known diagrams in its HTML and only uses the script to add newer ones from state.json, so it never shows an empty grid.",
+          "files": [
+            {
+              "path": "docs/library.html"
+            },
+            {
+              "path": "docs/library.js"
+            }
+          ]
+        }
+      ]
+    },
+    "static-json-as-api": {
+      "name": "A static file as a data API",
+      "kind": "architecture",
+      "level": "beginner",
+      "explanation": "A static site has no server code, but it can still fetch JSON files hosted next to it. A file the build or a tool keeps up to date becomes a read-only API.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "concepts-mcp already writes state.json for every diagram, so the page reads it directly instead of needing a backend or a rebuild.",
+          "files": [
+            {
+              "path": "docs/library.js",
+              "lines": "16-21"
+            }
+          ]
+        }
+      ]
+    },
+    "dedupe-by-key": {
+      "name": "Merging by a unique key",
+      "kind": "pattern",
+      "level": "beginner",
+      "explanation": "When combining two lists that may overlap, index one by a unique key and only add items from the other whose key isn't there yet.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "Cards in the HTML carry data-sha; the script collects those and adds only commits with an unseen short SHA, so nothing appears twice.",
+          "files": [
+            {
+              "path": "docs/library.js",
+              "lines": "18-22"
+            }
+          ]
+        }
+      ]
+    },
+    "script-defer": {
+      "name": "Deferred scripts",
+      "kind": "language-feature",
+      "level": "beginner",
+      "explanation": "A <script defer> downloads in parallel with parsing and runs after the HTML is parsed, in order. It doesn't block rendering and can safely query the finished DOM.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "MDN: script defer",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script#defer"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "library.js needs the grid and the existing cards to be in the DOM before it looks for them.",
+          "files": [
+            {
+              "path": "docs/library.html"
+            }
+          ]
+        }
+      ]
+    },
+    "self-hosted-webfonts": {
+      "name": "Self-hosted web fonts",
+      "kind": "performance",
+      "level": "intermediate",
+      "explanation": "Serving fonts from your own site with @font-face instead of a font CDN: no third-party requests, no tracking, and it works offline. WOFF2 is the compressed format browsers prefer; font-display: swap shows fallback text until the font loads.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "web.dev: Best practices for fonts",
+          "url": "https://web.dev/articles/font-best-practices"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "The site loads Manrope, DM Sans and DM Mono from docs/assets/fonts with font-display: swap, keeping visitors' requests on GitHub Pages.",
+          "files": [
+            {
+              "path": "docs/assets/site.css",
+              "lines": "1-4"
+            }
+          ]
+        }
+      ]
+    },
+    "variable-fonts": {
+      "name": "Variable fonts",
+      "kind": "concept",
+      "level": "intermediate",
+      "explanation": "One font file that contains a continuous range of weights (or other axes). @font-face declares the range, e.g. font-weight: 200 800, and the browser picks any weight in it.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "Manrope and DM Sans each ship as one variable file instead of a file per weight, which keeps the download small.",
+          "files": [
+            {
+              "path": "docs/assets/site.css",
+              "lines": "1-2"
+            }
+          ]
+        }
+      ]
+    },
+    "css-custom-properties": {
+      "name": "CSS custom properties as design tokens",
+      "kind": "language-feature",
+      "level": "beginner",
+      "explanation": "Variables declared in CSS (--ink: #17181f) and read with var(--ink). Defining colors and spacing once on :root keeps a design consistent and easy to change.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "MDN: Using CSS custom properties",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "The new violet accent, ink, line and background colors are tokens that every component reuses.",
+          "files": [
+            {
+              "path": "docs/assets/site.css"
+            }
+          ]
+        }
+      ]
+    },
+    "fluid-typography": {
+      "name": "Fluid type with clamp()",
+      "kind": "language-feature",
+      "level": "beginner",
+      "explanation": "clamp(min, preferred, max) lets a size grow with the viewport (e.g. 7vw) but never go below or above set limits, replacing several media-query breakpoints.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "The hero headline uses clamp(44px, 7vw, 78px) so it scales smoothly from phones to wide screens.",
+          "files": [
+            {
+              "path": "docs/assets/site.css"
+            }
+          ]
+        }
+      ]
+    },
+    "github-issue-forms": {
+      "name": "GitHub issue forms",
+      "kind": "tooling",
+      "level": "beginner",
+      "explanation": "YAML files in .github/ISSUE_TEMPLATE that turn a new issue into a form with labeled fields, dropdowns and required inputs, so reports arrive with the details maintainers need.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "GitHub Docs: Syntax for issue forms",
+          "url": "https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "Bug reports ask what happened, the agent and versions, and invite a screenshot of a broken diagram.",
+          "files": [
+            {
+              "path": ".github/ISSUE_TEMPLATE/bug_report.yml"
+            },
+            {
+              "path": ".github/ISSUE_TEMPLATE/config.yml"
+            }
+          ]
+        }
+      ]
+    },
+    "security-policy": {
+      "name": "Security policy (SECURITY.md)",
+      "kind": "security",
+      "level": "beginner",
+      "explanation": "A file that tells people how to report a vulnerability privately instead of opening a public issue. GitHub links it from the repo's Security tab.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "58508704a25d2e6bdcadf31ac9e5f478a9b072de",
+          "shortSha": "5850870",
+          "date": "2026-11-05T22:30:51-07:00",
+          "title": "A redesigned site with a live library page",
+          "folder": "commits/2026-11-05-5850870-a-redesigned-site-with-a-live-library-page",
+          "whyHere": "An MCP server runs on users' machines and reads their repositories, so a private reporting path matters.",
+          "files": [
+            {
+              "path": ".github/SECURITY.md"
+            }
+          ]
+        }
+      ]
+    },
+    "shell-glob-expansion": {
+      "name": "Shell glob expansion",
+      "kind": "tooling",
+      "level": "beginner",
+      "explanation": "In a Unix shell, an unquoted pattern like test/*.test.js is replaced by the matching file names before the program runs. Quoting it passes the pattern through unchanged, and then the program itself has to understand globs.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "Bash manual: Filename expansion",
+          "url": "https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "f1ad0981aba8da22814f651ffcec864cc89c4509",
+          "shortSha": "f1ad098",
+          "date": "2026-11-05T22:35:51-07:00",
+          "title": "Listing test files so Node 20 finds them",
+          "folder": "commits/2026-11-05-f1ad098-listing-test-files-so-node-20-finds-them",
+          "whyHere": "The quotes were there so Node's runner would expand the glob, which only Node 21+ does.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/package.json",
+              "lines": "16"
+            }
+          ]
+        }
+      ]
+    },
+    "node-test-runner": {
+      "name": "Node's built-in test runner",
+      "kind": "tooling",
+      "level": "beginner",
+      "explanation": "node --test runs test files with node:test and node:assert, without a framework. Its features vary by Node version: glob patterns as arguments arrived in Node 21.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "Node.js docs: Test runner",
+          "url": "https://nodejs.org/api/test.html"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "f1ad0981aba8da22814f651ffcec864cc89c4509",
+          "shortSha": "f1ad098",
+          "date": "2026-11-05T22:35:51-07:00",
+          "title": "Listing test files so Node 20 finds them",
+          "folder": "commits/2026-11-05-f1ad098-listing-test-files-so-node-20-finds-them",
+          "whyHere": "The package supports Node 20+, so the script has to work with Node 20's runner too.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/package.json"
+            }
+          ]
+        }
+      ]
+    },
+    "ci-version-matrix": {
+      "name": "CI version matrix",
+      "kind": "testing",
+      "level": "beginner",
+      "explanation": "Running the same CI job on several runtime versions at once, so a feature missing from the oldest supported version breaks the build instead of a user's install.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "f1ad0981aba8da22814f651ffcec864cc89c4509",
+          "shortSha": "f1ad098",
+          "date": "2026-11-05T22:35:51-07:00",
+          "title": "Listing test files so Node 20 finds them",
+          "folder": "commits/2026-11-05-f1ad098-listing-test-files-so-node-20-finds-them",
+          "whyHere": "The Node 20 jobs in the matrix were what caught that the tests silently never ran there.",
+          "files": [
+            {
+              "path": ".github/workflows/ci.yml"
+            }
+          ]
+        }
+      ]
+    },
+    "mcp-elicitation": {
+      "name": "MCP elicitation",
+      "kind": "protocol",
+      "level": "intermediate",
+      "explanation": "An MCP server can ask the user for structured input through the client: it sends a message plus a small JSON Schema (strings, numbers, booleans, enums), and the client shows a native form and returns accept, decline or cancel.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "MCP spec: Elicitation",
+          "url": "https://modelcontextprotocol.io/specification/draft/client/elicitation"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "setup_concepts shows the where and level pickers as forms in the agent's own UI instead of relying on the model to phrase the question.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/server.js",
+              "lines": "pickerRound"
+            }
+          ]
+        }
+      ]
+    },
+    "multi-round-trip-requests": {
+      "name": "Multi-round-trip requests",
+      "kind": "protocol",
+      "level": "advanced",
+      "explanation": "Instead of the server calling back into the client mid-request, a handler returns 'input required' with the questions and an opaque requestState. The client gathers the answers and retries the same call with them, so the server can stay stateless between rounds.",
+      "prerequisites": [
+        "MCP elicitation"
+      ],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "Each round only brings back the latest answers, so earlier ones (where, levels) ride along in requestState until setup has everything.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/server.js"
+            }
+          ]
+        }
+      ]
+    },
+    "capability-negotiation": {
+      "name": "Capability negotiation",
+      "kind": "protocol",
+      "level": "intermediate",
+      "explanation": "At connection (or per request) the client declares which optional features it supports. A server checks those capabilities before using a feature, rather than finding out from an error.",
+      "prerequisites": [
+        "Model Context Protocol"
+      ],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "The server reads the client's elicitation capability (from the request envelope or the initialize handshake) to decide between a form and the fallback.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/server.js",
+              "lines": "canElicit"
+            }
+          ]
+        }
+      ]
+    },
+    "graceful-degradation": {
+      "name": "Graceful degradation",
+      "kind": "pattern",
+      "level": "beginner",
+      "explanation": "When a richer feature isn't available, fall back to a simpler path that still gets the job done instead of failing.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "Clients without forms get needsChoices with the same questions, and the agent asks them with its own multiple-choice tool.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/server.js",
+              "lines": "questionsForAgent"
+            }
+          ]
+        }
+      ]
+    },
+    "single-source-of-truth": {
+      "name": "Single source of truth",
+      "kind": "pattern",
+      "level": "beginner",
+      "explanation": "Define each piece of knowledge in one place and derive every other use from it, so copies can't drift apart.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "The options, their order, descriptions and the recommended default live in choices.js; the terminal picker, MCP form and agent questions all read it.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/choices.js"
+            }
+          ]
+        }
+      ]
+    },
+    "raw-mode-terminal": {
+      "name": "Raw-mode terminal input",
+      "kind": "language-feature",
+      "level": "intermediate",
+      "explanation": "A terminal normally buffers input until Enter. setRawMode(true) delivers each key immediately, and readline.emitKeypressEvents turns byte sequences like ESC [ B into named keys such as 'down'. Raw mode must be switched off again, even on Ctrl-C.",
+      "prerequisites": [
+        "TTY detection"
+      ],
+      "learnMore": [
+        {
+          "title": "Node.js docs: readline.emitKeypressEvents",
+          "url": "https://nodejs.org/api/readline.html#readlineemitkeypresseventsstream-interface"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "The arrow-key pickers need single keypresses without adding a prompt library.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/picker.js",
+              "lines": "run"
+            }
+          ]
+        }
+      ]
+    },
+    "ansi-escape-redraw": {
+      "name": "Redrawing with ANSI escape codes",
+      "kind": "tooling",
+      "level": "intermediate",
+      "explanation": "Escape sequences such as ESC[3A (cursor up 3 lines) and ESC[J (clear to end of screen) let a program redraw part of the terminal in place. It only works if you know exactly how many rows you drew, so lines must never wrap.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "Each keypress redraws the picker in place, and rows are trimmed to the terminal width so a wrapped line can't break the redraw.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/picker.js",
+              "lines": "row"
+            }
+          ]
+        }
+      ]
+    },
+    "fake-stream-testing": {
+      "name": "Testing with fake streams",
+      "kind": "testing",
+      "level": "intermediate",
+      "explanation": "Code that reads from stdin and writes to stdout can take the streams as parameters; tests pass in-memory PassThrough streams and write key sequences into them.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "The picker tests type arrow keys, digits, Space and Enter into a PassThrough instead of needing a real terminal.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/test/levels.test.js"
+            }
+          ]
+        }
+      ]
+    },
+    "layered-config": {
+      "name": "Layered config with a local override",
+      "kind": "pattern",
+      "level": "intermediate",
+      "explanation": "A committed config holds the team default; a personal, gitignored file on top of it can override parts of it for one person, like .env.local or settings.local.json.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "One teammate can save only to their Desktop library with every file while the repo keeps the shared, lighter setting.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/config.js",
+              "lines": "readConfig"
+            }
+          ]
+        }
+      ]
+    },
+    "migration-on-read": {
+      "name": "Schema migration on read",
+      "kind": "pattern",
+      "level": "intermediate",
+      "explanation": "Version the stored format and convert old versions to the new shape as they're read, writing the new version only when something changes. Old files keep working without a migration step.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "A version 1 .concepts.json becomes one destination that keeps writing every file, so upgrading changes nothing until settings change.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/config.js",
+              "lines": "readSharedConfig"
+            }
+          ]
+        }
+      ]
+    },
+    "recommended-defaults": {
+      "name": "Recommended defaults",
+      "kind": "concept",
+      "level": "beginner",
+      "explanation": "Offer a few clear choices, mark one as recommended and preselect it, so pressing Enter (or --yes) gives a good result and more options stay one step away.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "Every picker lists the simplest option first (Diagram, This project) and preselects it; Custom is there for people who want more.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/choices.js"
+            }
+          ]
+        }
+      ]
+    },
+    "git-generation-number": {
+      "name": "Ordering commits by history position",
+      "kind": "algorithm",
+      "level": "intermediate",
+      "explanation": "git rev-list --count <sha> counts the commits reachable from a commit. A commit always counts higher than every ancestor, so the number orders commits by history even when timestamps tie, are rebased or come from skewed clocks.",
+      "prerequisites": [
+        "git rev-list and show"
+      ],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "Several commits a day had sorted by random hash; the count now prefixes folders and orders the index.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/git.js",
+              "lines": "commitSeq"
+            }
+          ]
+        }
+      ]
+    },
+    "zero-padded-sort-keys": {
+      "name": "Zero-padded sort keys",
+      "kind": "pattern",
+      "level": "beginner",
+      "explanation": "File browsers sort names as text, where '10' comes before '9'. Padding numbers to a fixed width ('00009', '00010') makes text order match number order.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "Commit folders start with a 5-digit sequence number so they list in commit order anywhere.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/library.js",
+              "lines": "commitFolder"
+            }
+          ]
+        }
+      ]
+    },
+    "fan-out-writes": {
+      "name": "Fan-out to several outputs",
+      "kind": "pattern",
+      "level": "beginner",
+      "explanation": "One input is processed once and written to several destinations, each with its own options.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "One record_commit_concepts call writes to every configured folder at that folder's level, each with its own state and index.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/core.js",
+              "lines": "record"
+            }
+          ]
+        }
+      ]
+    },
+    "aria-pressed-toggles": {
+      "name": "Toggle buttons with aria-pressed",
+      "kind": "concept",
+      "level": "beginner",
+      "explanation": "A button that stays on or off announces its state to screen readers through aria-pressed=\"true\"/\"false\"; CSS can style the pressed state from the same attribute.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "MDN: aria-pressed",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-pressed"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "4cc790e4db7ff137ab944fdb0fcc91b930ddc2fd",
+          "shortSha": "4cc790e",
+          "date": "2026-11-12T15:24:56-07:00",
+          "title": "Choosing how much each commit saves, and where",
+          "folder": "commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where",
+          "whyHere": "The website's Where and Detail pickers are groups of toggle buttons that also drive the init command shown.",
+          "files": [
+            {
+              "path": "docs/install.js"
+            },
+            {
+              "path": "docs/index.html"
             }
           ]
         }

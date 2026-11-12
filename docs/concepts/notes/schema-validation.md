@@ -8,7 +8,13 @@ Describe the expected shape of data once and check untrusted input against it at
 
 - [Zod](<https://zod.dev/>)
 
-## Where it showed up (1)
+## Where it showed up (2)
+
+### 2026-11-12 · [Choosing how much each commit saves, and where](../commits/2026-11-12-4cc790e-choosing-how-much-each-commit-saves-and-where/README.md) · `4cc790e`
+
+requestState comes back through the client, so earlier answers are re-validated with a Zod schema before setup uses them.
+
+Files: `packages/concepts-mcp/src/server.js:flowState`
 
 ### 2026-11-06 · [concepts-mcp: an MCP server that draws commits](../commits/2026-11-06-9931945-concepts-mcp-an-mcp-server-that-draws-commits/README.md) · `9931945`
 
