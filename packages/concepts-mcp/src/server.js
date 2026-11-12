@@ -1,6 +1,6 @@
 import { McpServer, inputRequired, acceptedContent, CLIENT_CAPABILITIES_META_KEY } from "@modelcontextprotocol/server";
 import { z } from "zod";
-import { pending, library, record, setup, currentSettings, NotConfiguredError } from "./core.js";
+import { pending, library, record, setup, currentSettings, folderProblem, NotConfiguredError } from "./core.js";
 import { AGENTS, WORKFLOW } from "./agents.js";
 import { recordInput } from "./schema.js";
 import { defaultDir, DEFAULT_PROJECT_DIR, defaultLibraryDir } from "./config.js";
@@ -35,118 +35,110 @@ function canElicit(server, ctx) {
   return Boolean(e && (e.form || !e.url));
 }
 
-// Form fields. A select shows the option names; what each option means goes in the field's description.
-const titled = (o) => (o.recommended ? `${o.label} (recommended)` : o.label);
-const explain = (options) => options.filter((o) => o.description).map((o) => `${o.label}: ${o.description}`).join(" ");
-const select = (title, options, value) => ({
-  type: "string", title, description: explain(options),
-  oneOf: options.map((o) => ({ const: String(o.value), title: titled(o) })), default: String(value),
-});
-const KIND = { project: "This project", library: "Learning library" };
+// Form fields: short titles only. The client draws each choice as its own control (a dropdown in Claude Code).
+const titled = (o) => `${o.pick ?? o.label}${o.recommended ? " (recommended)" : ""}`;
+const select = (title, options, value) => ({ type: "string", title, oneOf: options.map((o) => ({ const: String(o.value), title: titled(o) })), default: String(value) });
+const FOLDER_TITLE = { project: "Folder in this repo", library: "Folder on this computer" };
+const FOLDER_HINT = { project: "Any folder inside the repository, e.g. docs/concepts or business_logic/concepts.", library: "e.g. ~/Desktop/ConceptLibrary or Documents/Work. Each repository gets its own subfolder." };
+const LEVEL_TITLE = { project: "How much should each commit save in this project?", library: "How much should each commit save in your library?" };
+const kindsOf = (where) => (where === "both" ? ["project", "library"] : [where]);
 
-/** Answers carried between form rounds. They come back through the client, so they're validated again. */
-const flowState = z.object({
-  where: z.enum(["project", "library", "both"]).optional(),
-  scope: z.enum(["shared", "personal"]).optional(),
-  dests: z.array(z.object({ output: outputs, dir: z.string().min(1).max(500), detail: z.enum(["diagram", "editable", "notes", "custom"]), files: files.optional() })).min(1).max(2).optional(),
-});
+/** Answers carried between form screens. They come back through the client, so they're validated again. */
+const answersSchema = z.object({
+  where: z.enum(["project", "library", "both"]), scope: z.enum(["shared", "personal"]),
+  projectDir: z.string().min(1).max(500), libraryDir: z.string().min(1).max(500),
+  projectDetail: z.enum(["diagram", "editable", "notes", "custom"]), libraryDetail: z.enum(["diagram", "editable", "notes", "custom"]),
+  projectFiles: files, libraryFiles: files,
+}).partial();
 
-function readFlow(ctx) {
-  try { return flowState.parse(JSON.parse(ctx.mcpReq.requestState() ?? "{}")); } catch { return {}; }
+function readAnswers(ctx) {
+  try { return answersSchema.parse(JSON.parse(ctx.mcpReq.requestState() ?? "{}")); } catch { return {}; }
 }
-
-const ask = (key, flow, form) => inputRequired({ requestState: JSON.stringify(flow), inputRequests: { [key]: inputRequired.elicit(form) } });
 
 function describeCurrent(current) {
   return current.destinations.map((d) => `${d.shown} (${d.level})`).join(", ");
 }
 
+/** The screens still to show, in order, given the answers so far. One question per screen. */
+function screens(answers, current) {
+  const list = ["where"];
+  if (current.configured) list.push("scope");
+  if (!answers.where) return list;
+  for (const k of kindsOf(answers.where)) {
+    list.push(`${k}Dir`, `${k}Detail`);
+    if (answers[`${k}Detail`] === "custom") list.push(`${k}Files`);
+  }
+  return list;
+}
+
+/** The single field shown on one screen, with the current setting (or the default) filled in. */
+function field(id, answers, current) {
+  const k = id.startsWith("library") ? "library" : "project";
+  const now = current.destinations.find((d) => d.output === k);
+  if (id === "where") {
+    const kinds = new Set(current.destinations.map((d) => d.output));
+    return select("Where should diagrams go?", WHERE, kinds.size === 2 ? "both" : [...kinds][0] ?? "project");
+  }
+  if (id === "scope") return select("Save this change for", SCOPE, current.personal ? "personal" : "shared");
+  if (id.endsWith("Dir")) return { type: "string", title: FOLDER_TITLE[k], description: FOLDER_HINT[k], default: now?.dir ?? defaultDir(k), minLength: 1, maxLength: 500 };
+  if (id.endsWith("Detail")) {
+    const title = answers.where === "both" ? LEVEL_TITLE[k] : "How much should each commit save?";
+    return select(title, DETAIL, now ? presetFor(now.files) ?? "custom" : "diagram");
+  }
+  return { type: "array", title: "Which files?", minItems: 1, items: { anyOf: FILES.map((f) => ({ const: f.value, title: f.label })) }, default: now?.files ?? FILE_TYPES };
+}
+
 /**
- * The setup picker as MCP forms, one short form per round: where, then how much each folder keeps,
- * then which files for any folder set to Custom. Returns a tool result to send, or the chosen destinations.
+ * The setup picker as MCP forms, one question per screen: where, then for each place its folder and how much
+ * it saves (and which files, for Custom). Returns a tool result to send, or the chosen destinations.
  */
-function pickerRound(ctx, current) {
+async function pickerRound(ctx, current) {
   const responses = ctx.mcpReq.inputResponses ?? {};
   if (Object.values(responses).some((r) => r?.action && r.action !== "accept")) return { done: reply({ cancelled: true }, "The user closed the picker. Nothing changed.") };
-  const flow = readFlow(ctx);
-
-  const where = acceptedContent(responses, "where");
-  if (WHERE.some((o) => o.value === where?.where)) {
-    flow.where = where.where;
-    if (SCOPE.some((o) => o.value === where.scope)) flow.scope = where.scope;
+  const answers = readAnswers(ctx);
+  for (const id of Object.keys(responses)) {
+    const value = acceptedContent(responses, id)?.[id];
+    const checked = answersSchema.safeParse({ [id]: typeof value === "string" ? value.trim() : value });
+    if (checked.success && checked.data[id] !== undefined) answers[id] = checked.data[id];
   }
-  if (!flow.where) {
-    const kinds = new Set(current.destinations.map((d) => d.output));
-    const now = kinds.size === 2 ? "both" : [...kinds][0] ?? "project";
-    const properties = { where: select("Where should concept diagrams be saved?", WHERE, now) };
-    if (current.configured) properties.scope = select("Save this setting for", SCOPE, current.personal ? "personal" : "shared");
-    return {
-      done: ask("where", flow, {
-        message: current.configured ? `Concept diagrams are saved to ${describeCurrent(current)}. Change where they go:` : "Set up concept diagrams for this repository.",
-        requestedSchema: { type: "object", properties, required: ["where"] },
-      }),
-    };
-  }
-
-  const chosen = flow.where === "both" ? ["project", "library"] : [flow.where];
-  const details = acceptedContent(responses, "details");
-  if (details && !flow.dests) {
-    flow.dests = chosen.map((k) => ({
-      output: k,
-      dir: String(details[`${k}Folder`] || defaultDir(k)).slice(0, 500),
-      detail: DETAIL.some((d) => d.value === details[`${k}Detail`]) ? details[`${k}Detail`] : "diagram",
-    }));
-  }
-  if (!flow.dests) {
-    const properties = {};
-    for (const k of chosen) {
-      const now = current.destinations.find((d) => d.output === k);
-      properties[`${k}Detail`] = select(`${KIND[k]}: how much should each commit save?`, DETAIL, now ? presetFor(now.files) ?? "custom" : "diagram");
-      properties[`${k}Folder`] = { type: "string", title: `${KIND[k]}: folder`, description: k === "project" ? "Inside the repository." : "Each repository gets its own subfolder here.", default: now?.dir ?? defaultDir(k) };
+  // A folder that can't be used is asked again, with the reason and what was typed filled in.
+  let problem = null;
+  for (const k of ["project", "library"]) {
+    const dir = answers[`${k}Dir`];
+    if (dir && responses[`${k}Dir`] && (problem = await folderProblem(current.root, k, dir))) {
+      delete answers[`${k}Dir`];
+      current = { ...current, destinations: [...current.destinations.filter((d) => d.output !== k), { output: k, dir, files: current.destinations.find((d) => d.output === k)?.files ?? ["svg"] }] };
+      break;
     }
-    return { done: ask("details", flow, { message: "How much should each commit save? Changes apply to new commits; files already saved stay where they are.", requestedSchema: { type: "object", properties, required: chosen.map((k) => `${k}Detail`) } }) };
   }
-
-  const custom = flow.dests.filter((d) => d.detail === "custom" && !d.files);
-  if (custom.length) {
-    const answer = acceptedContent(responses, "files");
-    if (answer) {
-      for (const d of custom) {
-        const picked = Array.isArray(answer[`${d.output}Files`]) ? answer[`${d.output}Files`].filter((f) => FILE_TYPES.includes(f)) : [];
-        d.files = picked.length ? picked : ["svg"];
-      }
-    } else {
-      const properties = {};
-      for (const d of custom) {
-        const now = current.destinations.find((c) => c.output === d.output);
-        properties[`${d.output}Files`] = {
-          type: "array", title: `${KIND[d.output]}: which files?`, minItems: 1, description: explain(FILES),
-          items: { anyOf: FILES.map((f) => ({ const: f.value, title: f.label })) }, default: now?.files ?? FILE_TYPES,
-        };
-      }
-      return { done: ask("files", flow, { message: "Choose the files to save for each commit.", requestedSchema: { type: "object", properties } }) };
-    }
+  const next = screens(answers, current).find((id) => answers[id] === undefined);
+  if (next) {
+    const message = problem ? `Concept diagrams · ${problem}` : next === "where" && current.configured ? `Concept diagrams · now saving to ${describeCurrent(current)}` : "Concept diagrams";
+    return { done: inputRequired({ requestState: JSON.stringify(answers), inputRequests: { [next]: inputRequired.elicit({ message, requestedSchema: { type: "object", properties: { [next]: field(next, answers, current) }, required: [next] } }) } }) };
   }
   return {
-    scope: flow.scope ?? (current.personal ? "personal" : "shared"),
-    destinations: flow.dests.map((d) => ({ output: d.output, dir: d.dir, ...(d.detail === "custom" ? { files: d.files } : { detail: d.detail }) })),
+    scope: answers.scope ?? (current.personal ? "personal" : "shared"),
+    destinations: kindsOf(answers.where).map((k) => ({
+      output: k, dir: answers[`${k}Dir`],
+      ...(answers[`${k}Detail`] === "custom" ? { files: answers[`${k}Files`] } : { detail: answers[`${k}Detail`] }),
+    })),
   };
 }
 
 /** For clients without forms: the same questions, for the agent to ask with its own picker. */
 function questionsForAgent(current) {
   const line = (q) => q.options.map((o) => `${o.label}${o.description ? ` (${o.description})` : ""}`).join(" · ");
-  const [where, level, which] = agentQuestions();
+  const [where, folder, level, which] = agentQuestions();
   const lines = [
     current.configured ? `Concept diagrams are saved to ${describeCurrent(current)}${current.personal ? " (your personal setting)" : ""}.` : "Concept diagrams aren't set up in this repository yet.",
-    "Ask the user with your multiple-choice tool (AskUserQuestion in Claude Code), one question at a time, recommended option first:",
+    "Ask the user with your multiple-choice tool (AskUserQuestion in Claude Code), one short question at a time, recommended option first:",
     `1. ${where.question} ${line(where)}`,
-    `2. For each chosen folder, ${level.question.replace(" (ask once per chosen folder)", "").replace("<folder>", "it")} ${line(level)}`,
-    `3. Only when Custom is chosen (multi-select): ${which.question.replace(" (only when Custom was chosen)", "").replace("<folder>", "it")} ${line(which)}`,
+    `2. For each chosen place, which folder? Offer the default and let them type another: this project → ${folder.defaults.project}; library → ${folder.defaults.library}.`,
+    `3. For each chosen place, how much should each commit save? ${line(level)}`,
+    `4. Only when Custom is chosen (multi-select): ${which.question.replace(" (only when Custom was chosen)", "").replace("<folder>", "it")} ${line(which)}`,
   ];
-  if (current.configured) lines.push(`4. Save this for everyone or just me? ${SCOPE.map((o) => `${titled(o)} (${o.description})`).join(" · ")}`);
-  lines.push(`Defaults: project folder ${DEFAULT_PROJECT_DIR}/, library ${defaultLibraryDir()}/<repo>/. The user can also name another folder.`);
-  lines.push('Then call setup_concepts again with their answers, e.g. destinations: [{"output":"project","detail":"diagram"},{"output":"library","files":["svg","excalidraw","notes"]}]' + (current.configured ? ' and scope: "shared" or "personal".' : "."));
+  if (current.configured) lines.push(`5. Save this for everyone or just me? ${SCOPE.map((o) => `${titled(o)} (${o.description})`).join(" · ")}`);
+  lines.push('Then call setup_concepts again with their answers, e.g. destinations: [{"output":"project","dir":"business_logic/concepts","detail":"diagram"},{"output":"library","dir":"~/Documents/Work","files":["svg","excalidraw","notes"]}]' + (current.configured ? ' and scope: "shared" or "personal".' : "."));
   return lines.join("\n");
 }
 
@@ -192,7 +184,7 @@ export function createServer(version) {
         if (!canElicit(server, ctx)) {
           return reply({ needsChoices: true, configured: current.configured, current: current.destinations, questions: agentQuestions(), scopes: current.configured ? SCOPE : undefined }, questionsForAgent(current));
         }
-        const round = pickerRound(ctx, current);
+        const round = await pickerRound(ctx, current);
         if (round.done) return round.done;
         choices = round;
       }

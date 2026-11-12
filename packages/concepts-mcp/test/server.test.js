@@ -141,8 +141,9 @@ test("setup keeps existing AGENTS.md content and existing hooks, and is idempote
   await chmod(join(repo.root, ".git/hooks/post-commit"), 0o755);
   const run = (args) => execFile(process.execPath, [entry, ...args], { cwd: repo.root, env: repo.env });
   const first = await run(["init", "--output", "project", "--agents", "claude,cursor", "--hook", "--yes"]);
-  assert.match(first.stdout, /claude mcp add --scope user concepts -- npx -y concepts-mcp@latest/);
-  assert.match(first.stdout, /cursor:\/\/anysphere\.cursor-deeplink/);
+  assert.match(first.stdout, /Concept diagrams are on\. Saving to docs\/concepts\./);
+  assert.match(first.stdout, /concepts\/#install/);
+  assert.ok(first.stdout.trim().split("\n").length <= 6, `init output stays short:\n${first.stdout}`);
   await run(["init", "--output", "project", "--agents", "claude", "--hook", "--yes"]);
   const agents = await readFile(join(repo.root, "AGENTS.md"), "utf8");
   assert.match(agents, /^# Rules\n\nUse tabs\./);

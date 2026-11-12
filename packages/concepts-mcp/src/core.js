@@ -1,7 +1,8 @@
-import { dirname, isAbsolute, join, resolve } from "node:path";
-import { existsSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { existsSync, realpathSync } from "node:fs";
+import { access, constants, stat } from "node:fs/promises";
 import {
-  CONFIG_FILE, LOCAL_CONFIG_FILE, OUTPUTS, contractHome, destinationPath, ensureDir, ignoreLocalConfig,
+  CONFIG_FILE, LOCAL_CONFIG_FILE, OUTPUTS, contractHome, destinationPath, ensureDir, expandHome, ignoreLocalConfig,
   normalizeDir, outputDirInRepo, readConfig, readLocalConfig, readSharedConfig, writeConfig, writeLocalConfig,
 } from "./config.js";
 import { changedFiles, commitDiff, commitMeta, commitSeq, commitsSince, git, headSha, isAncestor, repoName, repoRoot } from "./git.js";
@@ -70,13 +71,48 @@ function seeded(root, source) {
  * Turn a requested destination into a stored one. Unset fields keep what the same kind of folder had
  * before, then fall back to defaults: docs/concepts or the learning library, at the Diagram level.
  */
-function toDestination(d, previous, name) {
+/** A path with symlinks resolved, even when its last parts don't exist yet (they're kept as typed). */
+function realish(path) {
+  let head = path;
+  const tail = [];
+  while (!existsSync(head) && dirname(head) !== head) { tail.unshift(head.slice(dirname(head).length).replace(/^[\\/]/, "")); head = dirname(head); }
+  try { return join(realpathSync(head), ...tail); } catch { return path; }
+}
+
+function toDestination(d, previous, name, root) {
   if (!OUTPUTS.includes(d.output)) throw new Error('Each destination needs output "project" or "library".');
   const prev = previous.find((p) => p.output === d.output);
   const files = d.files?.length ? normalizeFiles(d.files) : d.detail ? parseDetail(d.detail) : prev?.files ?? DEFAULT_FILES;
-  const out = { output: d.output, dir: normalizeDir(d.output, d.dir ?? prev?.dir), files };
+  let dir = typeof d.dir === "string" && d.dir.trim() ? d.dir.trim() : prev?.dir;
+  // A repo folder typed as a full path is stored relative to the repo, so the shared config works for everyone.
+  if (d.output === "project" && dir && root && isAbsolute(expandHome(dir))) dir = relative(realish(root), realish(resolve(expandHome(dir)))).split(sep).join("/") || ".";
+  const out = { output: d.output, dir: normalizeDir(d.output, dir), files };
   if (d.output === "library") out.repoName = prev?.repoName || name;
   return out;
+}
+
+/** Why a destination's folder can't be used, in plain words, or null when it's fine. Creates nothing. */
+async function problemWith(root, d) {
+  let path;
+  try { path = await destinationPath(root, d); } catch {
+    return "Choose a folder inside this repository, not the repository itself or a folder outside it.";
+  }
+  let existing = path;
+  while (!existsSync(existing) && dirname(existing) !== existing) existing = dirname(existing);
+  try {
+    if (!(await stat(existing)).isDirectory()) return `${shownDir(root, existing)} is a file, not a folder.`;
+    await access(existing, constants.W_OK);
+  } catch {
+    return `You can't save files in ${shownDir(root, existing)}. Choose another folder.`;
+  }
+  return null;
+}
+
+/** Check a folder someone typed, before saving anything. Returns a short message, or null when it's fine. */
+export async function folderProblem(repoPath, output, dir) {
+  if (typeof dir !== "string" || !dir.trim()) return "Type a folder.";
+  const root = await repoRoot(resolve(repoPath || process.cwd()));
+  return problemWith(root, toDestination({ output, dir }, [], await repoName(root), root));
 }
 
 /** What's set up now: the shared settings, the personal override, and which one applies. */
@@ -105,7 +141,11 @@ export async function setup(repoPath, { destinations, output, dir, detail, files
   const name = await repoName(root);
 
   const asked = destinations?.length ? destinations : [{ output: output ?? "project", dir, detail, files }];
-  const next = asked.map((d) => toDestination(d, before, name));
+  const next = asked.map((d) => toDestination(d, before, name, root));
+  for (const d of next) {
+    const problem = await problemWith(root, d);
+    if (problem) throw new Error(`${d.dir}: ${problem}`);
+  }
   const resolved = await resolveAll(root, next);
   const paths = resolved.map((d) => d.path);
   if (new Set(paths).size !== paths.length) throw new Error("Two destinations point at the same folder.");

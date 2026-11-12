@@ -14,8 +14,8 @@ export const WHERE = [
 ];
 
 export const DETAIL = [
-  { value: "diagram", label: "Diagram", description: "Just the diagram: concepts.svg.", files: ["svg"], recommended: true },
-  { value: "editable", label: "Editable", description: "The diagram plus concepts.excalidraw, to open and edit in Excalidraw.", files: ["svg", "excalidraw"] },
+  { value: "diagram", label: "Diagram", pick: "Just the diagram", description: "Just the diagram: concepts.svg.", files: ["svg"], recommended: true },
+  { value: "editable", label: "Editable", pick: "Diagram + editable file", description: "The diagram plus concepts.excalidraw, to open and edit in Excalidraw.", files: ["svg", "excalidraw"] },
   { value: "notes", label: "Diagram + notes", description: "The diagram plus a README for each commit and a note for each concept.", files: ["svg", "notes"] },
   { value: "custom", label: "Custom…", description: "Choose the files yourself." },
 ];
@@ -79,6 +79,7 @@ export function agentQuestions() {
   const opts = (list) => list.map(({ value, label, description, recommended }) => ({ value, label: recommended ? `${label} (recommended)` : label, description }));
   return [
     { id: "where", question: "Where should concept diagrams be saved?", multiSelect: false, options: opts(WHERE) },
+    { id: "folder", question: "Which folder? (ask once per chosen place; free text with the default offered)", multiSelect: false, freeText: true, defaults: { project: "docs/concepts (any folder inside the repo)", library: "~/Desktop/ConceptLibrary (any folder on this computer; each repo gets a subfolder)" } },
     { id: "detail", question: "How much should each commit save in <folder>? (ask once per chosen folder)", multiSelect: false, options: opts(DETAIL) },
     { id: "files", question: "Which files should <folder> get? (only when Custom was chosen)", multiSelect: true, options: opts(FILES) },
   ];

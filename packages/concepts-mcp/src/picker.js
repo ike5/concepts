@@ -14,15 +14,9 @@ const dim = (s) => `\x1b[2m${s}\x1b[22m`;
 const bold = (s) => `\x1b[1m${s}\x1b[22m`;
 const cyan = (s) => `\x1b[36m${s}\x1b[39m`;
 
-const labelOf = (o) => `${o.label}${o.recommended ? dim(" (recommended)") : ""}`;
-const visible = (s) => s.replace(/\x1b\[[0-9;]*m/g, "").length;
-
-/** One option row, with its description cut to fit the terminal so a row never wraps (wrapping breaks redraws). */
-function row(output, head, description) {
-  const room = (output.columns || 100) - visible(head) - 3;
-  if (!description || room < 12) return head;
-  return `${head}${dim(`  ${description.length > room ? `${description.slice(0, room - 1)}…` : description}`)}`;
-}
+// Options show just their name: the terminal pickers stay short. Descriptions are for the MCP form and agents.
+const nameOf = (o) => o.pick ?? o.label;
+const labelOf = (o) => `${nameOf(o)}${o.recommended ? dim(" (recommended)") : ""}`;
 
 /** Shared key loop: draws with `draw()` (returns lines), feeds keys to `onKey`, which returns a result to finish. */
 function run({ input, output, draw, onKey }) {
@@ -62,14 +56,13 @@ export function select({ question, options, defaultIndex = 0, input = process.st
     input, output,
     draw: () => [
       `${cyan("?")} ${bold(question)}`,
-      ...options.map((o, i) => row(output, `${i === at ? cyan("❯") : " "} ${i + 1}. ${i === at ? cyan(labelOf(o)) : labelOf(o)}`, o.description)),
-      dim("  ↑/↓ to move · Enter to choose"),
+      ...options.map((o, i) => `${i === at ? cyan("❯") : " "} ${i === at ? cyan(labelOf(o)) : labelOf(o)}`),
     ],
     onKey: (str, key) => {
       if (key.name === "up" || key.name === "k") at = (at - 1 + options.length) % options.length;
       else if (key.name === "down" || key.name === "j" || key.name === "tab") at = (at + 1) % options.length;
       else if (/^[1-9]$/.test(str ?? "") && Number(str) <= options.length) at = Number(str) - 1;
-      else if (key.name === "return" || key.name === "enter") return { done: at, summary: `${cyan("✔")} ${question} ${dim("·")} ${options[at].label}\n` };
+      else if (key.name === "return" || key.name === "enter") return { done: at, summary: `${cyan("✔")} ${question} ${dim("·")} ${nameOf(options[at])}\n` };
       return null;
     },
   });
@@ -84,8 +77,8 @@ export function multiSelect({ question, options, checked = options.map((_, i) =>
     input, output,
     draw: () => [
       `${cyan("?")} ${bold(question)}`,
-      ...options.map((o, i) => row(output, `${i === at ? cyan("❯") : " "} ${on.has(i) ? cyan("◉") : "◯"} ${labelOf(o)}`, o.description)),
-      warning || dim("  ↑/↓ to move · Space to toggle · Enter to confirm"),
+      ...options.map((o, i) => `${i === at ? cyan("❯") : " "} ${on.has(i) ? cyan("◉") : "◯"} ${labelOf(o)}`),
+      warning || dim("  Space to tick · Enter when done"),
     ],
     onKey: (str, key) => {
       warning = "";
@@ -96,7 +89,7 @@ export function multiSelect({ question, options, checked = options.map((_, i) =>
       else if (key.name === "return" || key.name === "enter") {
         if (on.size < min) { warning = `  Choose at least ${min}.`; return null; }
         const picked = [...on].sort((a, b) => a - b);
-        return { done: picked, summary: `${cyan("✔")} ${question} ${dim("·")} ${picked.map((i) => options[i].label).join(", ")}\n` };
+        return { done: picked, summary: `${cyan("✔")} ${question} ${dim("·")} ${picked.map((i) => nameOf(options[i])).join(", ")}\n` };
       }
       return null;
     },
@@ -107,8 +100,13 @@ export function multiSelect({ question, options, checked = options.map((_, i) =>
 export async function text({ question, fallback, input = process.stdin, output = process.stdout }) {
   const rl = createInterface({ input, output, terminal: Boolean(input.isTTY) });
   try {
-    const answer = (await rl.question(`${cyan("?")} ${bold(question)}${fallback ? dim(` (${fallback})`) : ""} `)).trim();
-    return answer || fallback;
+    // The default is typed in for you: Enter keeps it, Backspace edits it.
+    const pending = rl.question(`${cyan("?")} ${bold(question)} `);
+    if (fallback) rl.write(fallback);
+    const answer = (await pending).trim() || fallback;
+    // Collapse the answered line like the pickers do: "✔ Folder in this repo: · business_logic".
+    if (input.isTTY) output.write(`\x1b[1A\r\x1b[J${cyan("✔")} ${question.replace(/:$/, "")} ${dim("·")} ${answer}\n`);
+    return answer;
   } finally {
     rl.close();
   }
