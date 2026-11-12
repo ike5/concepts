@@ -134,6 +134,23 @@
         "idempotent-upsert",
         "aria-pressed-toggles"
       ]
+    },
+    "9143fca12dc1765d5e977e8620900e8fb2ab5c46": {
+      "shortSha": "9143fca",
+      "date": "2026-11-12T15:30:44-07:00",
+      "subject": "Show folders relative to the repo or with ~ in setup messages",
+      "title": "Showing folders the way people read them",
+      "folder": "commits/2026-11-12-9143fca-showing-folders-the-way-people-read-them",
+      "concepts": [
+        "cross-platform-paths",
+        "display-vs-data"
+      ]
+    },
+    "737482ea4e3e3a9ad6fbb818e17da936289a5a83": {
+      "shortSha": "737482e",
+      "date": "2026-11-12T15:46:33-07:00",
+      "subject": "Remove the setup pickers from the website",
+      "skipped": "Removes website setup pickers, restoring the earlier setup step; nothing new to learn"
     }
   },
   "concepts": {
@@ -1732,6 +1749,67 @@
             },
             {
               "path": "docs/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    "cross-platform-paths": {
+      "name": "Cross-platform path separators",
+      "kind": "language-feature",
+      "level": "beginner",
+      "explanation": "Windows separates path parts with \\ and macOS/Linux with /. Node's path module uses the current platform's separator (path.sep), so the same code produces different strings on each OS. Paths shown to people or compared in tests are often normalized to / first.",
+      "prerequisites": [],
+      "learnMore": [
+        {
+          "title": "Node.js docs: path.sep and path.posix",
+          "url": "https://nodejs.org/api/path.html#pathsep"
+        }
+      ],
+      "sightings": [
+        {
+          "sha": "9143fca12dc1765d5e977e8620900e8fb2ab5c46",
+          "shortSha": "9143fca",
+          "date": "2026-11-12T15:30:44-07:00",
+          "title": "Showing folders the way people read them",
+          "folder": "commits/2026-11-12-9143fca-showing-folders-the-way-people-read-them",
+          "whyHere": "Project folders are now shown as repo-relative paths joined with /, so messages read the same everywhere and the Windows CI jobs pass.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/core.js",
+              "lines": "shownDir"
+            },
+            {
+              "path": "packages/concepts-mcp/src/config.js",
+              "lines": "outputDirInRepo"
+            }
+          ]
+        }
+      ]
+    },
+    "display-vs-data": {
+      "name": "Display values vs data values",
+      "kind": "pattern",
+      "level": "beginner",
+      "explanation": "Keep the precise value for programs (an absolute path) and derive a separate, friendlier form for people (docs/concepts, ~/ConceptLibrary). Formatting for display shouldn't change the data other code relies on.",
+      "prerequisites": [],
+      "learnMore": [],
+      "sightings": [
+        {
+          "sha": "9143fca12dc1765d5e977e8620900e8fb2ab5c46",
+          "shortSha": "9143fca",
+          "date": "2026-11-12T15:30:44-07:00",
+          "title": "Showing folders the way people read them",
+          "folder": "commits/2026-11-12-9143fca-showing-folders-the-way-people-read-them",
+          "whyHere": "The structured result still carries absolute paths; only the messages use the shown form.",
+          "files": [
+            {
+              "path": "packages/concepts-mcp/src/server.js",
+              "lines": "setupSummary"
+            },
+            {
+              "path": "packages/concepts-mcp/src/cli.js",
+              "lines": "printSaved"
             }
           ]
         }
