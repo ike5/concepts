@@ -57,6 +57,16 @@ export async function commitMeta(root, sha) {
   return { sha: full, shortSha: short, author, date, subject, body: body.join(sep).trim() };
 }
 
+/**
+ * A commit's place in history: how many commits it builds on, itself included. A commit always numbers
+ * higher than every commit before it, whatever the clocks said, so same-day commits sort correctly.
+ */
+export async function commitSeq(root, sha) {
+  const out = await git(root, ["rev-list", "--count", sha], { allowFail: true });
+  const n = Number(out?.trim());
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
 export async function changedFiles(root, sha) {
   const out = await git(root, ["show", "--format=", "--numstat", "-M", "--no-color", sha]);
   return out.trim().split("\n").filter(Boolean).map((line) => {

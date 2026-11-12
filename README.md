@@ -46,16 +46,16 @@ Or run `npx -y concepts-mcp@latest init` in the repository folder. From then on,
 | --- | --- |
 | **1. You or your agent commit** | Concepts tracks which commits already have a diagram, and skips lockfiles, generated files and trivial commits. |
 | **2. Your agent models the change** | It reads the diff and picks the views that teach it: architecture, sequence, flow, state or data model. |
-| **3. The server draws it** | An editable `.excalidraw` file, an SVG that renders on GitHub, and a README explaining each numbered concept. |
+| **3. The server draws it** | An SVG that renders on GitHub, and if you want more, an editable `.excalidraw` file and a README explaining each numbered concept. |
 
-Diagrams go **in the project** (`docs/concepts/`, visible on GitHub) or **in your learning library** (`~/Desktop/ConceptLibrary/<repo>/`). You choose during setup. See [this repo's own library](docs/concepts/README.md): every commit to Concepts is diagrammed by Concepts.
+Diagrams go **in the project** (`docs/concepts/`, visible on GitHub), **in your learning library** (`~/Desktop/ConceptLibrary/<repo>/`), or both. Setup asks with simple pickers, and each folder gets its own level: **Diagram** (just the SVG, recommended), **Editable** (+ `.excalidraw`), **Diagram + notes** (+ README and concept notes) or **Custom**. Change it any time with `npx -y concepts-mcp@latest settings`, for everyone or just for you. Every diagram is numbered by its place in git history, so same-day commits stay in order. See [this repo's own library](docs/concepts/README.md): every commit to Concepts is diagrammed by Concepts.
 
 ## What your agent gets
 
 | Tool | What it does |
 | --- | --- |
 | `get_concepts_instructions` | The workflow, so every commit is modeled the same way |
-| `setup_concepts` | Turns a repository on and writes the agent instructions |
+| `setup_concepts` | Sets up or changes where diagrams go and how much each commit saves, with a picker |
 | `get_unprocessed_commits` | Commits without a diagram yet, with diffs sized to fit |
 | `get_concept_library` | Concepts already learned, so their notes are reused |
 | `record_commit_concepts` | Lays out and draws the diagrams, then updates the library |
